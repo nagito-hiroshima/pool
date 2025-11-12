@@ -1,7 +1,15 @@
 {
-  "version": 0.2,
-  "generated_at": "2025-11-12T05:35:00Z",
+  "version": "0.3",
+  "generated_at": "2025-11-12T06:43:39.457Z",
   "files": [
+    {
+      "dir": "/",
+      "name": "phone.png",
+      "path": "/phone.png",
+      "type": "image/png",
+      "description": "",
+      "uploaded_at": "2025-11-12T06:43:39.457Z"
+    },
     {
       "dir": "/",
       "name": "gold.png",
