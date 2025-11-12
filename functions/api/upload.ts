@@ -24,15 +24,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   // 入力
-  const dir = sanitizeDir((form.get("dir") as string) || "images");
+  const dir = sanitizeDir((form.get("dir") as string) || "");
   const customFilename = (form.get("filename") as string) || "";
   const overwrite = ((form.get("overwrite") as string) || "").toLowerCase() === "true";
 
   // ファイル名決定
   const orig = file.name || "upload.bin";
   const safeOrig = sanitizeFilename(customFilename || orig);
-  const datedPrefix = `${new Date().toISOString().slice(0,10).replaceAll("-", "/")}/`; // YYYY/MM/DD/
-  const path = `${dir}/${datedPrefix}${uniquePrefix()}-${safeOrig}`.replaceAll("//", "/");
+  const path = `${dir}/`.replaceAll("//", "/");
 
   // サイズ制限（例: 20MB）
   const maxBytes = 20 * 1024 * 1024;
