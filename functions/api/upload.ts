@@ -34,6 +34,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const customFilename = (form.get("filename") as string) || "";
   const overwrite = ((form.get("overwrite") as string) || "").toLowerCase() === "true";
 
+  // description を取得して簡易サニタイズ（制御文字除去・最大200文字）
+  const rawDesc = (form.get("description") as string) || "";
+  const description = String(rawDesc).replace(/[\x00-\x1F\x7F]/g, "").trim().slice(0, 200);
+  
   // ファイル名決定
   const orig = file.name || "upload.bin";
   const safeOrig = sanitizeFilename(customFilename || orig);
@@ -106,7 +110,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     name: targetName,
     path: (normDir === "/" ? `/${targetName}` : `${normDir}/${targetName}`),
     type: file.type || null,
-    description: "",
+    description: description,
     uploaded_at: new Date().toISOString()
   };
   if (!Array.isArray(contentObj.files)) contentObj.files = [];
