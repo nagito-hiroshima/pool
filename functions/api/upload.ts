@@ -162,7 +162,8 @@ const json = (obj: any, status = 200) =>
   new Response(JSON.stringify(obj), { status, headers: { "content-type": "application/json; charset=utf-8" } });
 
 const ghHeaders = (token: string) => ({
-  Authorization: `token ${token}`,
+  // fine-grained token を使う場合や最近の推奨に合わせて Bearer に変更
+  Authorization: `Bearer ${token}`,
   Accept: "application/vnd.github+json",
   "Content-Type": "application/json",
   "User-Agent": "cf-pages-uploader"
@@ -252,19 +253,13 @@ async function commitFilesAtomically(
       }
 
       // 4) create new tree with entries (replacing existing paths)
-      const treeEntries = Object.keys(files).map(p => ({
-        path: p.replace(/^\/+/, ""), // remove leading slash
-        mode: files[p].mode || "100644",
-        type: "blob",
-        sha: blobMap[p]
-      }));
       const treeRes = await fetch(`${apiBase}/repos/${repo}/git/trees`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ base_tree: baseTree, tree: treeEntries })
+        body: JSON.stringify({ base_tree: base_tree, tree: treeEntries })
       });
       if (!treeRes.ok) throw new Error(`tree create failed: ${treeRes.status} ${await treeRes.text()}`);
-      const treeJson = await res.json<any>(); // ← ここ誤り？
+      const treeJson = await treeRes.json<any>();
       const newTreeSha = treeJson.sha;
 
       // 5) create commit
