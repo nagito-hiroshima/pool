@@ -267,3 +267,88 @@ const cors = (env: Env, res: Response, req: Request) => {
   if (allowed) headers.set("Access-Control-Allow-Origin", origin);
   return new Response(res.body, { status: res.status, headers });
 };
+
+/**
+ * 複数ファイルを単一コミットで作成/更新するユーティリティ
+ * files: { "<path/in/repo>": { contentBase64: string, mode?: "100644" | "100755" } }
+ * 戻り値: 新しいコミット sha
+ */
+async function commitFilesAtomically(apiBase: string, repo: string, branch: string, files: Record<string, { contentBase64: string; mode?: string }>, message: string, token: string) {
+  const headers = ghHeaders(token);
+
+  // 1) ref -> commit sha
+  const refRes = await fetch(`${apiBase}/repos/${repo}/git/ref/heads/${encodeURIComponent(branch)}`, { headers });
+  if (!refRes.ok) throw new Error(`ref fetch failed: ${refRes.status} ${await refRes.text()}`);
+  const refJson = await refRes.json<any>();
+  const parentSha = refJson.object?.sha;
+  if (!parentSha) throw new Error("no parent sha");
+
+  // 2) get parent commit -> base tree
+  const commitRes = await fetch(`${apiBase}/repos/${repo}/git/commits/${parentSha}`, { headers });
+  if (!commitRes.ok) throw new Error(`commit fetch failed: ${commitRes.status} ${await commitRes.text()}`);
+  const commitJson = await commitRes.json<any>();
+  const baseTree = commitJson.tree?.sha;
+
+  // 3) create blobs for each file
+  const blobMap: Record<string, string> = {};
+  for (const p of Object.keys(files)) {
+    const body = { content: files[p].contentBase64, encoding: "base64" };
+    const bRes = await fetch(`${apiBase}/repos/${repo}/git/blobs`, { method: "POST", headers, body: JSON.stringify(body) });
+    if (!bRes.ok) throw new Error(`blob create failed for ${p}: ${bRes.status} ${await bRes.text()}`);
+    const bj = await bRes.json<any>();
+    blobMap[p] = bj.sha;
+  }
+
+  // 4) create new tree with entries (replacing existing paths)
+  const treeEntries = Object.keys(files).map(p => ({
+    path: p.replace(/^\/+/,""), // remove leading slash
+    mode: files[p].mode || "100644",
+    type: "blob",
+    sha: blobMap[p]
+  }));
+  const treeRes = await fetch(`${apiBase}/repos/${repo}/git/trees`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ base_tree: baseTree, tree: treeEntries })
+  });
+  if (!treeRes.ok) throw new Error(`tree create failed: ${treeRes.status} ${await treeRes.text()}`);
+  const treeJson = await treeRes.json<any>();
+  const newTreeSha = treeJson.sha;
+
+  // 5) create commit
+  const commitBody = {
+    message,
+    tree: newTreeSha,
+    parents: [parentSha]
+  };
+  const newCommitRes = await fetch(`${apiBase}/repos/${repo}/git/commits`, { method: "POST", headers, body: JSON.stringify(commitBody) });
+  if (!newCommitRes.ok) throw new Error(`commit create failed: ${newCommitRes.status} ${await newCommitRes.text()}`);
+  const newCommitJson = await newCommitRes.json<any>();
+  const newCommitSha = newCommitJson.sha;
+
+  // 6) update ref to point to new commit
+  const updateRes = await fetch(`${apiBase}/repos/${repo}/git/refs/heads/${encodeURIComponent(branch)}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ sha: newCommitSha })
+  });
+  if (!updateRes.ok) throw new Error(`ref update failed: ${updateRes.status} ${await updateRes.text()}`);
+
+  return newCommitSha;
+}
+
+// 既存の PUT (upload) と content.json 更新の代わりに以下を呼ぶ例:
+//
+// const fileB64 = b64; // 画像本体の base64（既に計算済み）
+// const contentObj = { ...更新済みの content.json オブジェクト... };
+// const contentJsonStr = JSON.stringify(contentObj, null, 2);
+// const encoder = new TextEncoder();
+// const contentB64 = base64FromBytes(encoder.encode(contentJsonStr));
+//
+// await commitFilesAtomically(apiBase, repo, branch, {
+//   [safePath]: { contentBase64: fileB64 },
+//   ["content.json"]: { contentBase64: contentB64 }
+// }, `Upload ${targetName} and update content.json`, env.GH_TOKEN);
+//
+// // 結果を返す
+// return cors(env, json({ ok: true, path: safePath, filename: targetName, rawUrl: `https://raw.githubusercontent.com/${repo}/${branch}/${safePath}` }, 200), request);
