@@ -116,7 +116,95 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const payload = safeJSON(text);
   const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${safePath}`;
 
-  return cors(env, json({ ok: true, path: safePath, filename: targetName, rawUrl, github: payload }, 200), request);
+  // ----- content.json を更新（リポジトリ直下） -----
+  (async () => {
+    try {
+      const contentPath = "content.json";
+      // 既存 content.json を取得
+      const getRes = await fetch(`${apiBase}/repos/${repo}/contents/${contentPath}?ref=${encodeURIComponent(branch)}`, {
+        headers: ghHeaders(env.GH_TOKEN),
+      });
+ 
+      let contentObj: any = null;
+      let contentSha: string | undefined;
+      if (getRes.ok) {
+        const meta = await getRes.json<any>();
+        contentSha = meta.sha;
+        const rawB64 = String(meta.content || "").replace(/\n/g, "");
+        const decoded = new TextDecoder().decode(Uint8Array.from(atob(rawB64), c => c.charCodeAt(0)));
+        try { contentObj = JSON.parse(decoded); } catch { contentObj = { version: 1, generated_at: new Date().toISOString(), files: [] }; }
+      } else if (getRes.status === 404) {
+        // 無ければ新規作成用オブジェクト
+        contentObj = { version: 1, generated_at: new Date().toISOString(), files: [] };
+      } else {
+        // 取得に失敗したら更新をスキップ
+        return;
+      }
+ 
+      // 新しいエントリを作る
+      const normDir = dir ? `/${dir.replace(/^\/+|\/+$/g, "")}` : "/";
+      const entry = {
+        dir: normDir,
+        name: targetName,
+        path: (normDir === "/" ? `/${targetName}` : `${normDir}/${targetName}`),
+        type: file.type || null,
+        description: "",
+        uploaded_at: new Date().toISOString()
+      };
+ 
+      if (!Array.isArray(contentObj.files)) contentObj.files = [];
+      // 最新を先頭に追加
+      contentObj.files.unshift(entry);
+
+      // バージョン処理: 現在の version の major.minor を取得して minor を +1 にする
+      // 例: 1 -> 1.1, 1.0 -> 1.1, 2.1 -> 2.2
+      const prevVer = contentObj.version;
+      const bumpVersion = (v: string | number | undefined): string => {
+        if (v === undefined || v === null) return "1.1";
+        const s = String(v).trim();
+        const m = s.match(/^(\d+)(?:\.(\d+))?$/);
+        if (!m) return "1.1";
+        const major = Number(m[1]);
+        const minor = Number(m[2] ?? "0");
+        return `${major}.${minor + 1}`;
+      };
+      contentObj.version = bumpVersion(prevVer);
+ 
+      // 更新時刻
+      contentObj.generated_at = new Date().toISOString();
+ 
+      // JSON を pretty でシリアライズして base64 化
+      const newJson = JSON.stringify(contentObj, null, 2);
+      const encoder = new TextEncoder();
+      const newB64 = base64FromBytes(encoder.encode(newJson));
+ 
+      // PUT で更新（sha があれば上書き）
+      const putRes = await fetch(`${apiBase}/repos/${repo}/contents/${contentPath}`, {
+        method: "PUT",
+        headers: ghHeaders(env.GH_TOKEN),
+        body: JSON.stringify({
+          message: `Update content.json: add ${entry.path}`,
+          content: newB64,
+          branch,
+          ...(contentSha ? { sha: contentSha } : {})
+        })
+      });
+ 
+      // 成功であれば何もしない、失敗ならログに残す（レスポンスには影響させない）
+      if (!putRes.ok) {
+        const t = await putRes.text();
+        // console.log などは Cloudflare Pages のログに流れます
+        // eslint-disable-next-line no-console
+        console.warn("content.json update failed:", putRes.status, safeJSON(t));
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("content.json update error:", err && err.message ? err.message : String(err));
+    }
+  })();
+  // ----- /content.json 更新完了 -----
+ 
+   return cors(env, json({ ok: true, path: safePath, filename: targetName, rawUrl, github: payload }, 200), request);
 };
 
 /* ===== ユーティリティ ===== */
