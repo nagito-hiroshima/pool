@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "generated_at": "2025-11-12T05:35:00Z",
+  "files": [
+    {
+      "dir": "/",
+      "name": "gold.png",
+      "path": "/gold.png",
+      "type": "image/png",
+      "description": "A shiny gold image.",
+      "uploaded_at": "2024-06-10T12:34:56Z"
+    },
+    {
+      "dir": "/",
+      "name": "silver.png",
+      "path": "/silver.png",
+      "type": "image/png",
+      "description": "A shiny silver image.",
+      "uploaded_at": "2024-06-11T09:21:45Z"
+    },
+    {
+      "dir": "/",
+      "name": "hankakutozenkaku.png",
+      "path": "/hankakutozenkaku.png",
+      "type": "image/png",
+      "description": "Image showing conversion from half-width to full-width characters.",
+      "uploaded_at": "2025-11-12T00:00:00Z"
+    },
+    {
+      "dir": "/",
+      "name": "zenkakutohankaku.png",
+      "path": "/zenkakutohankaku.png",
+      "type": "image/png",
+      "description": "Image showing conversion from full-width to half-width characters.",
+      "uploaded_at": "2025-11-12T00:00:00Z"
+    },
+    {
+      "dir": "/highschool",
+      "name": "admin.png",
+      "path": "/highschool/admin.png",
+      "type": "image/png",
+      "description": "Highschool Admin icon image.",
+      "uploaded_at": "2024-06-09T15:00:00Z"
+    },
+    {
+      "dir": "/highschool",
+      "name": "bot.png",
+      "path": "/highschool/bot.png",
+      "type": "image/png",
+      "description": "Highschool Bot avatar image.",
+      "uploaded_at": "2024-06-09T15:10:00Z"
+    },
+    {
+      "dir": "/highschool",
+      "name": "default.png",
+      "path": "/highschool/default.png",
+      "type": "image/png",
+      "description": "Default placeholder image for highschool users.",
+      "uploaded_at": "2024-06-09T15:20:00Z"
+    },
+    {
+      "dir": "/highschool",
+      "name": "high-student.png",
+      "path": "/highschool/high-student.png",
+      "type": "image/png",
+      "description": "Highschool student image.",
+      "uploaded_at": "2024-06-09T15:30:00Z"
+    },
+    {
+      "dir": "/highschool",
+      "name": "jr-student.png",
+      "path": "/highschool/jr-student.png",
+      "type": "image/png",
+      "description": "Junior high student image.",
+      "uploaded_at": "2024-06-09T15:40:00Z"
+    },
+    {
+      "dir": "/highschool",
+      "name": "staff.png",
+      "path": "/highschool/staff.png",
+      "type": "image/png",
+      "description": "Highschool staff member image.",
+      "uploaded_at": "2024-06-09T15:50:00Z"
+    },
+    {
+      "dir": "/highschool",
+      "name": "unknown.png",
+      "path": "/highschool/unknown.png",
+      "type": "image/png",
+      "description": "Unknown user image.",
+      "uploaded_at": "2024-06-09T16:00:00Z"
+    }
+  ]
+}

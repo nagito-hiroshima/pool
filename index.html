@@ -1,41 +1,355 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>素材サイト</title>
-    <style>
-      body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; padding: 20px; }
-      ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; }
-      li { width: 140px; text-align: center; }
-      a { color: inherit; text-decoration: none; display: block; }
-      img { max-width: 120px; height: auto; display: block; margin: 0 auto 6px; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
-      .name { font-size: 13px; word-break: break-word; }
-      .folder-name { font-size: 18px; font-weight: bold; margin-top: 24px; margin-bottom: 12px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>素材サイト</title>
+  <style>
+    :root { --gap: 12px; }
+    body { font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; padding: 20px; }
+    h1 { margin: 0 0 8px; }
+    .muted { color:#666; font-size:12px; }
+
+    /* grid */
+    ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--gap); }
+    li { width: 140px; text-align: center; }
+    a.card { color: inherit; text-decoration: none; display: block; }
+    .thumb { max-width:120px; height:auto; display:block; margin:0 auto 6px; border:1px solid #ddd; border-radius:6px; background:
+      repeating-linear-gradient(45deg,#f6f6f6 0 10px,#fff 10px 20px); }
+    .name { font-size: 13px; word-break: break-word; }
+    .folder-name { font-size: 18px; font-weight: bold; margin-top: 24px; margin-bottom: 12px; }
+
+    hr { margin: 20px 0; border: none; border-top: 1px solid #eee; }
+
+    /* modal */
+    .modal {
+      position: fixed; inset: 0; display: none;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,.6); z-index: 9999; padding: 20px;
+    }
+    .modal.open { display: flex; }
+    .modal-box {
+      background: #fff; width: min(1100px, 96vw); max-height: 92vh;
+      border-radius: 14px; overflow: hidden; display: grid;
+      grid-template-columns: 1.2fr 1fr;
+    }
+    @media (max-width: 820px) {
+      .modal-box { grid-template-columns: 1fr; }
+    }
+
+    /* 左ペイン（画像）*/
+    .modal-media {
+      position: relative;
+      display:flex; align-items:center; justify-content:center;
+      min-height: 320px;
+      overflow: auto;              /* ← 等倍時はスクロール可 */
+      background: #111;
+    }
+    /* 背景パターン（checker） */
+    .bg-checker {
+      background:
+        linear-gradient(45deg, #bbb 25%, transparent 25%) 0 0/20px 20px,
+        linear-gradient(-45deg, #bbb 25%, transparent 25%) 0 0/20px 20px,
+        linear-gradient(45deg, transparent 75%, #bbb 75%) 0 0/20px 20px,
+        linear-gradient(-45deg, transparent 75%, #bbb 75%) 0 0/20px 20px,
+        #eee;
+    }
+    .bg-light { background: #f5f5f5; }
+    .bg-dark  { background: #111; }
+
+    .modal-media img {
+      display:block;
+      background: transparent;
+      /* 下のクラス切替で振る舞いを変更 */
+    }
+    .fit img {
+      max-width: 100%;
+      max-height: 86vh;      /* ヘッダ控えめに */
+      object-fit: contain;
+    }
+    .actual img {
+      max-width: none;       /* 等倍表示（拡大画像はスクロール） */
+      max-height: none;
+    }
+
+    .nav {
+      position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; pointer-events: none;
+    }
+    .nav button {
+      pointer-events: auto; border:none; background: rgba(255,255,255,.85);
+      width: 44px; height: 44px; border-radius:999px; cursor:pointer; font-size:20px;
+    }
+
+    .modal-info { padding: 16px 16px 12px; overflow: auto; }
+    .modal-title { margin: 0 0 6px; font-size: 18px; }
+    .meta { font-size: 12px; color:#555; margin: 6px 0 12px; }
+    .desc { font-size: 14px; margin: 10px 0 16px; white-space: pre-wrap; }
+    .row { display: flex; gap: 8px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+    .urlbox { flex: 1; min-width: 220px; font-size: 12px; padding: 8px; border:1px solid #ddd; border-radius: 8px; background:#fafafa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .btn {
+      appearance: none; border:1px solid #ddd; background:#fff; border-radius: 10px;
+      padding: 8px 12px; cursor: pointer; font-size: 13px;
+      transition: box-shadow .15s, transform .02s;
+    }
+    .btn:hover { box-shadow: 0 3px 10px rgba(0,0,0,.1); }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background:#111; color:#fff; border-color:#111; }
+    .seg { display:inline-flex; border:1px solid #ddd; border-radius:10px; overflow:hidden; }
+    .seg button { border:none; padding:8px 10px; background:#fff; cursor:pointer; font-size:13px; }
+    .seg button.active { background:#111; color:#fff; }
+
+    .modal-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom: 8px; }
+    .iconbtn { border:none; background:transparent; cursor:pointer; font-size:22px; line-height:1; padding: 4px 8px; color:#999; }
+    .iconbtn:hover { color:#333; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+      background: rgba(0,0,0,.85); color:#fff; font-size:13px; padding: 8px 12px; border-radius: 999px;
+      opacity: 0; pointer-events: none; transition: opacity .25s;
+    }
+    .toast.show { opacity: 1; }
+  </style>
 </head>
 <body>
-<!-- 素材リスト -->
+  <h1>📂 素材一覧</h1>
+  <div id="app"><p class="muted">読み込み中...</p></div>
 
-<div class="folder-name">/</div>
-<ul>
-    <li><a href="./zenkakutohankaku.png"><img src="./zenkakutohankaku.png" alt="zenkakutohankaku.png"><div class="name">zenkakutohankaku.png</div></a></li>
-    <li><a href="./hankakutozenkaku.png"><img src="./hankakutozenkaku.png" alt="hankakutozenkaku.png"><div class="name">hankakutozenkaku.png</div></a></li>
-    <li><a href="./gold.png"><img src="./gold.png" alt="gold.png"><div class="name">gold.png</div></a></li>
-</ul>
-<hr>
+  <!-- Modal -->
+  <div id="modal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div id="media" class="modal-media fit bg-checker">
+        <img id="modalImg" alt="">
+        <div class="nav">
+          <button id="prevBtn" title="前へ">‹</button>
+          <button id="nextBtn" title="次へ">›</button>
+        </div>
+      </div>
+      <div class="modal-info">
+        <div class="modal-head">
+          <h2 id="modalTitle" class="modal-title"></h2>
+          <button id="closeBtn" class="iconbtn" aria-label="閉じる">✕</button>
+        </div>
 
-<div class="folder-name">/highschool</div>
-<ul>
-    <li><a href="./highschool/highschool/admin.png"><img src="./highschool/admin.png" alt="admin.png"><div class="name">admin.png</div></a></li>
-    <li><a href="./highschool/bot.png"><img src="./highschool/bot.png" alt="bot.png"><div class="name">bot.png</div></a></li>
-    <li><a href="./highschool/default.png"><img src="./highschool/default.png" alt="default.png"><div class="name">default.png</div></a></li>
-    <li><a href="./highschool/high-student.png"><img src="./highschool/high-student.png" alt="high-student.png"><div class="name">high-student.png</div></a></li>
-    <li><a href="./highschool/staff.png"><img src="./highschool/staff.png" alt="staff.png"><div class="name">staff.png</div></a></li>
-    <li><a href="./highschool/jr-student.png"><img src="./highschool/jr-student.png" alt="jr-student.png"><div class="name">jr-student.png</div></a></li>
-    <li><a href="./highschool/unknown.png"><img src="./highschool/unknown.png" alt="unknown.png"><div class="name">unknown.png</div></a></li>
-</ul>
-<hr>
+        <div id="modalDesc" class="desc"></div>
+        <div id="modalMeta" class="meta"></div>
 
+        <!-- 表示モード切替 -->
+        <div class="row">
+          <div class="seg" id="viewSeg">
+            <button data-mode="fit" class="active" title="画面に合わせて表示">フィット</button>
+            <button data-mode="actual" title="等倍表示（スクロール可）">等倍</button>
+          </div>
+
+          <!-- 背景切替 -->
+          <div class="seg" id="bgSeg">
+            <button data-bg="checker" class="active" title="チェック柄">チェック</button>
+            <button data-bg="light" title="明るい">白</button>
+            <button data-bg="dark" title="暗い">黒</button>
+          </div>
+          <label class="btn" style="display:inline-flex;align-items:center;gap:6px;">
+            <span>色</span>
+            <input id="bgPicker" type="color" value="#eeeeee" style="border:none;background:transparent;width:24px;height:24px;padding:0;cursor:pointer;">
+          </label>
+          <button id="bgReset" class="btn">背景リセット</button>
+        </div>
+
+        <div class="row">
+          <div id="urlText" class="urlbox"></div>
+          <button id="copyBtn" class="btn">URLをコピー</button>
+        </div>
+
+        <div class="row">
+          <button id="openBtn" class="btn primary">新しいタブで開く</button>
+          <button id="copyMdBtn" class="btn">Markdown をコピー</button>
+          <button id="copyHtmlBtn" class="btn">HTML をコピー</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    const $app = document.getElementById('app');
+    const modal = document.getElementById('modal');
+    const media = document.getElementById('media');
+    const imgEl = document.getElementById('modalImg');
+    const titleEl = document.getElementById('modalTitle');
+    const descEl = document.getElementById('modalDesc');
+    const metaEl = document.getElementById('modalMeta');
+    const urlText = document.getElementById('urlText');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyMdBtn = document.getElementById('copyMdBtn');
+    const copyHtmlBtn = document.getElementById('copyHtmlBtn');
+    const openBtn = document.getElementById('openBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const toast = document.getElementById('toast');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const viewSeg = document.getElementById('viewSeg');
+    const bgSeg = document.getElementById('bgSeg');
+    const bgPicker = document.getElementById('bgPicker');
+    const bgReset = document.getElementById('bgReset');
+
+    const toRel = (p) => p.startsWith('/') ? '.' + p : p;
+    const toAbs = (p) => new URL(toRel(p), location.href).href;
+
+    let catalog = { files: [] };
+    let flat = [];
+    let current = -1;
+
+    const showToast = (msg) => {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1200);
+    };
+
+    // 背景クラス適用
+    const setBg = (kind, customColor=null) => {
+      media.classList.remove('bg-checker','bg-light','bg-dark');
+      media.style.background = '';
+      if (kind === 'checker') media.classList.add('bg-checker');
+      else if (kind === 'light') media.classList.add('bg-light');
+      else if (kind === 'dark') media.classList.add('bg-dark');
+      else if (kind === 'custom' && customColor) {
+        media.style.background = customColor;
+      }
+      // seg の見た目更新
+      for (const b of bgSeg.querySelectorAll('button')) b.classList.toggle('active', b.dataset.bg === kind);
+    };
+
+    // 表示モード（フィット／等倍）
+    const setViewMode = (mode) => {
+      media.classList.remove('fit','actual');
+      media.classList.add(mode);
+      for (const b of viewSeg.querySelectorAll('button')) b.classList.toggle('active', b.dataset.mode === mode);
+      // 等倍にした直後は原点にスクロールさせる
+      if (mode === 'actual') media.scrollTo({top:0,left:0,behavior:'instant'});
+    };
+
+    const openModal = (idx) => {
+      current = idx;
+      const f = flat[idx];
+      if (!f) return;
+
+      imgEl.src = toRel(f.path);
+      imgEl.alt = f.name;
+      titleEl.textContent = f.name;
+      descEl.textContent = f.description || '';
+      metaEl.textContent = `dir: ${f.dir}  /  type: ${f.type}  /  uploaded: ${new Date(f.uploaded_at).toLocaleString()}`;
+      urlText.textContent = toAbs(f.path);
+
+      openBtn.onclick = () => window.open(toRel(f.path), '_blank', 'noopener');
+      copyBtn.onclick = async () => { await navigator.clipboard.writeText(toAbs(f.path)); showToast('URLをコピーしました'); };
+      copyMdBtn.onclick = async () => { await navigator.clipboard.writeText(`![${f.name}](${toAbs(f.path)})`); showToast('Markdownをコピーしました'); };
+      copyHtmlBtn.onclick = async () => { await navigator.clipboard.writeText(`<img src="${toAbs(f.path)}" alt="${f.name}">`); showToast('HTMLをコピーしました'); };
+
+      // 初期状態：フィット＋チェック背景
+      setViewMode('fit');
+      setBg('checker');
+
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    };
+
+    const closeModal = () => {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      imgEl.src = '';
+      current = -1;
+    };
+
+    const openPrev = () => { if (flat.length) openModal((current - 1 + flat.length) % flat.length); };
+    const openNext = () => { if (flat.length) openModal((current + 1) % flat.length); };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => {
+      if (!modal.classList.contains('open')) return;
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'ArrowLeft') openPrev();
+      if (e.key === 'ArrowRight') openNext();
+    });
+    prevBtn.addEventListener('click', openPrev);
+    nextBtn.addEventListener('click', openNext);
+
+    // セグメント操作
+    viewSeg.addEventListener('click', (e) => {
+      const mode = e.target?.dataset?.mode;
+      if (mode) setViewMode(mode);
+    });
+    bgSeg.addEventListener('click', (e) => {
+      const bg = e.target?.dataset?.bg;
+      if (bg) setBg(bg);
+    });
+    bgPicker.addEventListener('input', () => setBg('custom', bgPicker.value));
+    bgReset.addEventListener('click', () => { bgPicker.value = '#eeeeee'; setBg('checker'); });
+
+    const render = (data) => {
+      const byDir = new Map();
+      for (const f of data.files || []) {
+        if (!byDir.has(f.dir)) byDir.set(f.dir, []);
+        byDir.get(f.dir).push(f);
+      }
+      for (const arr of byDir.values()) arr.sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+      const dirs = [...byDir.keys()].sort((a,b)=>a.localeCompare(b,'ja'));
+
+      flat = dirs.flatMap(d => byDir.get(d));
+
+      const frag = document.createDocumentFragment();
+
+      dirs.forEach(dir => {
+        const files = byDir.get(dir);
+        const h = document.createElement('div');
+        h.className = 'folder-name';
+        h.textContent = dir;
+        frag.appendChild(h);
+
+        const ul = document.createElement('ul');
+        files.forEach((f) => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = toRel(f.path);
+          a.className = 'card';
+          a.addEventListener('click', (ev) => { ev.preventDefault(); openModal(flat.indexOf(f)); });
+
+          const img = document.createElement('img');
+          img.src = toRel(f.path);
+          img.alt = f.name;
+          img.loading = 'lazy';
+          img.className = 'thumb';
+
+          const nm = document.createElement('div');
+          nm.className = 'name';
+          nm.textContent = f.name;
+
+          a.appendChild(img);
+          a.appendChild(nm);
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+        frag.appendChild(ul);
+        frag.appendChild(document.createElement('hr'));
+      });
+
+      $app.innerHTML = '';
+      $app.appendChild(frag);
+
+      const meta = document.createElement('p');
+      meta.className = 'muted';
+      meta.textContent = `version ${data.version} / generated_at ${data.generated_at}`;
+      $app.appendChild(meta);
+    };
+
+    // 起動
+    try {
+      const res = await fetch('./content.json', { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      catalog = await res.json();
+      render(catalog);
+    } catch (e) {
+      $app.innerHTML = `<p style="color:#c00">JSONの読み込みに失敗しました：${String(e)}</p>`;
+    }
+  </script>
 </body>
 </html>
