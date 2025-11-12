@@ -1,7 +1,15 @@
 {
-  "version": "0.3",
-  "generated_at": "2025-11-12T06:43:39.457Z",
+  "version": "0.4",
+  "generated_at": "2025-11-12T06:48:29.643Z",
   "files": [
+    {
+      "dir": "/",
+      "name": "HDD____.png",
+      "path": "/HDD____.png",
+      "type": "image/png",
+      "description": "",
+      "uploaded_at": "2025-11-12T06:48:29.643Z"
+    },
     {
       "dir": "/",
       "name": "phone.png",
