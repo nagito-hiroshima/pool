@@ -32,6 +32,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // ファイル名決定
   const orig = file.name || "upload.bin";
   const safeOrig = sanitizeFilename(customFilename || orig);
+  
+  //拡張子がついてなければアップロードされたものをつける
+  const hasExt = safeOrig.includes(".");
+  const origExt = orig.includes(".") ? orig.split(".").pop() : "";
+  const finalName = hasExt ? safeOrig : (origExt ? `${safeOrig}.${origExt}` : safeOrig);
+  
+
 
   // ★ GitHub API 用の最終パス（/で終わらせない／スラッシュはエンコードしない）
   let targetName = safeOrig;
