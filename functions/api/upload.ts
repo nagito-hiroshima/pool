@@ -36,7 +36,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   // description を取得して簡易サニタイズ（制御文字除去・最大200文字）
   const rawDesc = (form.get("description") as string) || "";
-  const description = String(rawDesc).replace(/[\x00-\x1F\x7F]/g, "").trim().slice(0, 200);
+  //日本語OK、制御文字除去、トリム、最大200文字
+  const description = rawDesc
+    .replace(/[\x00-\x1F\x7F]/g, "")
+    .trim()
+    .slice(0, 200);
   
   // ファイル名決定
   const orig = file.name || "upload.bin";
