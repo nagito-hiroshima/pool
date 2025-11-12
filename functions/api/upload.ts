@@ -41,7 +41,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
 
   // ★ GitHub API 用の最終パス（/で終わらせない／スラッシュはエンコードしない）
-  let targetName = safeOrig;
+  let targetName = finalName;
   let safePath = dir ? `${dir}/${targetName}` : targetName;
 
   // サイズ制限（例: 20MB）
