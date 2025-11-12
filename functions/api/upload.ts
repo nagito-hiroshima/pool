@@ -136,14 +136,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   };
 
   // ★ 原子コミット（必要に応じ 409 競合を軽減するためリトライ）
-  await commitFilesAtomically(
-    apiBase,
-    repo,
-    branch,
-    filesToCommit,
-    `Upload ${targetName} and update content.json`,
-    env.GH_TOKEN
-  );
+  try {
+    await commitFilesAtomically(
+      apiBase,
+      repo,
+      branch,
+      filesToCommit,
+      `Upload ${targetName} and update content.json`,
+      env.GH_TOKEN
+    );
+  } catch (err: any) {
+    // eslint-disable-next-line no-console
+    console.warn("atomic commit failed:", err && err.message ? err.message : String(err));
+    return cors(env, json({ error: "Commit failed", detail: String(err) }, 502), request);
+  }
 
   const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${safePath}`;
   return cors(env, json({ ok: true, path: safePath, filename: targetName, rawUrl }, 200), request);
@@ -253,10 +259,16 @@ async function commitFilesAtomically(
       }
 
       // 4) create new tree with entries (replacing existing paths)
+      const treeEntries = Object.keys(files).map(p => ({
+        path: p.replace(/^\/+/, ""),
+        mode: files[p].mode || "100644",
+        type: "blob",
+        sha: blobMap[p]
+      }));
       const treeRes = await fetch(`${apiBase}/repos/${repo}/git/trees`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ base_tree: base_tree, tree: treeEntries })
+        body: JSON.stringify({ base_tree: baseTree, tree: treeEntries })
       });
       if (!treeRes.ok) throw new Error(`tree create failed: ${treeRes.status} ${await treeRes.text()}`);
       const treeJson = await treeRes.json<any>();
