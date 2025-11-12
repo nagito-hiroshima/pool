@@ -55,14 +55,23 @@
 
   <img id="preview" alt="" />
   <div class="row">
-    <button id="send" class="primary">アップロード</button>
+    <button id="send" class="primary" disabled>アップロード</button>
   </div>
   <div id="out" class="out"></div>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const drop = $("drop"), file = $("file"), preview = $("preview"), out = $("out");
+const sendBtn = $("send");
 let pickedFile = null;
+
+/* 画像かどうか判定（MIME があれば優先、なければ拡張子で判定） */
+function isImageFile(f) {
+  if (!f) return false;
+  if (f.type) return f.type.startsWith("image/");
+  const name = f.name || "";
+  return /\.(jpe?g|png|gif|bmp|webp|svg|heic|heif)$/i.test(name);
+}
 
 drop.addEventListener("click", () => file.click());
 drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("drag"); });
@@ -75,16 +84,32 @@ file.addEventListener("change", () => {
   if (file.files && file.files[0]) setFile(file.files[0]);
 });
 
+function resetSelection() {
+  pickedFile = null;
+  preview.src = "";
+  preview.style.display = "none";
+  drop.innerText = "ここに画像をドラッグ＆ドロップ\nまたはクリックして選択";
+  sendBtn.disabled = true;
+}
+
 function setFile(f) {
+  if (!isImageFile(f)) {
+    alert("画像ファイルのみ選択できます（jpg, png, gif, webp, svg 等）");
+    resetSelection();
+    return;
+  }
+
   pickedFile = f;
   const url = URL.createObjectURL(f);
   preview.src = url;
   preview.style.display = "block";
   drop.innerText = `${f.name} (${Math.round(f.size/1024)} KB)`;
+  sendBtn.disabled = false;
 }
 
 $("send").addEventListener("click", async () => {
   if (!pickedFile) { alert("ファイルを選んでください"); return; }
+  if (!isImageFile(pickedFile)) { alert("画像ファイルのみアップロード可能です"); return; }
   out.textContent = "アップロード中…";
 
   const fd = new FormData();
@@ -93,23 +118,27 @@ $("send").addEventListener("click", async () => {
   if ($("filename").value) fd.append("filename", $("filename").value);
   fd.append("overwrite", $("overwrite").checked ? "true" : "false");
 
-  const res = await fetch($("endpoint").value || "/api/upload", {
-    method: "POST",
-    headers: {
-      "X-Admin-Token": $("admin").value || ""
-    },
-    body: fd
-  });
-
-  const text = await res.text();
   try {
-    const json = JSON.parse(text);
-    out.textContent = JSON.stringify(json, null, 2);
-    if (json.rawUrl) {
-      out.innerHTML += `\n\n<a href="${json.rawUrl}" target="_blank" rel="noopener">rawUrlを開く</a>`;
+    const res = await fetch($("endpoint").value || "/api/upload", {
+      method: "POST",
+      headers: {
+        "X-Admin-Token": $("admin").value || ""
+      },
+      body: fd
+    });
+
+    const text = await res.text();
+    try {
+      const json = JSON.parse(text);
+      out.textContent = JSON.stringify(json, null, 2);
+      if (json.rawUrl) {
+        out.innerHTML += `\n\n<a href="${json.rawUrl}" target="_blank" rel="noopener">rawUrlを開く</a>`;
+      }
+    } catch {
+      out.textContent = text;
     }
-  } catch {
-    out.textContent = text;
+  } catch (err) {
+    out.textContent = "アップロードに失敗しました: " + (err && err.message ? err.message : String(err));
   }
 });
 </script>
