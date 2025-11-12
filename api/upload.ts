@@ -1,4 +1,3 @@
-// functions/api/upload.ts
 export const onRequestOptions: PagesFunction<Env> = async ({ request, env }) => {
   return cors(env, new Response(null, { status: 204 }), request);
 };
