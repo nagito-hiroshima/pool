@@ -80,7 +80,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     method: "PUT",
     headers: ghHeaders(env.GH_TOKEN),
     body: JSON.stringify({
-      message: `Upload ${targetName} via CF Pages`,
+      message: `Upload ${targetName} via moenaigomi.com`,
       content: b64,
       branch,
       ...(sha ? { sha } : {})
@@ -98,7 +98,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         method: "PUT",
         headers: ghHeaders(env.GH_TOKEN),
         body: JSON.stringify({
-          message: `Upload ${targetName} via CF Pages (unique)`,
+          message: `Upload ${targetName} via moenaigomi.com (unique)`,
           content: b64,
           branch
         })
