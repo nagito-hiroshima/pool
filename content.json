@@ -11,27 +11,19 @@
       "uploaded_at": "2024-06-10T12:34:56Z"
     },
     {
-      "dir": "/",
-      "name": "silver.png",
-      "path": "/silver.png",
-      "type": "image/png",
-      "description": "A shiny silver image.",
-      "uploaded_at": "2024-06-11T09:21:45Z"
-    },
-    {
-      "dir": "/",
+      "dir": "/hankakuzenkaku",
       "name": "hankakutozenkaku.png",
-      "path": "/hankakutozenkaku.png",
+      "path": "/hankakuzenkaku/hankakutozenkaku.png",
       "type": "image/png",
-      "description": "Image showing conversion from half-width to full-width characters.",
+      "description": "半角to全角サイトのアイコン画像",
       "uploaded_at": "2025-11-12T00:00:00Z"
     },
     {
-      "dir": "/",
+      "dir": "/hankakuzenkaku",
       "name": "zenkakutohankaku.png",
-      "path": "/zenkakutohankaku.png",
+      "path": "/hankakuzenkaku/zenkakutohankaku.png",
       "type": "image/png",
-      "description": "Image showing conversion from full-width to half-width characters.",
+      "description": "全角to半角サイトのアイコン画像",
       "uploaded_at": "2025-11-12T00:00:00Z"
     },
     {
@@ -39,7 +31,7 @@
       "name": "admin.png",
       "path": "/highschool/admin.png",
       "type": "image/png",
-      "description": "Highschool Admin icon image.",
+      "description": "管理者っぽい人の画像",
       "uploaded_at": "2024-06-09T15:00:00Z"
     },
     {
@@ -47,7 +39,7 @@
       "name": "bot.png",
       "path": "/highschool/bot.png",
       "type": "image/png",
-      "description": "Highschool Bot avatar image.",
+      "description": "botの画像",
       "uploaded_at": "2024-06-09T15:10:00Z"
     },
     {
@@ -55,7 +47,7 @@
       "name": "default.png",
       "path": "/highschool/default.png",
       "type": "image/png",
-      "description": "Default placeholder image for highschool users.",
+      "description": "ユーザー未設定時のデフォルト画像。",
       "uploaded_at": "2024-06-09T15:20:00Z"
     },
     {
@@ -63,7 +55,7 @@
       "name": "high-student.png",
       "path": "/highschool/high-student.png",
       "type": "image/png",
-      "description": "Highschool student image.",
+      "description": "ユーザー1の画像",
       "uploaded_at": "2024-06-09T15:30:00Z"
     },
     {
@@ -71,7 +63,7 @@
       "name": "jr-student.png",
       "path": "/highschool/jr-student.png",
       "type": "image/png",
-      "description": "Junior high student image.",
+      "description": "ユーザー2の画像",
       "uploaded_at": "2024-06-09T15:40:00Z"
     },
     {
@@ -79,7 +71,7 @@
       "name": "staff.png",
       "path": "/highschool/staff.png",
       "type": "image/png",
-      "description": "Highschool staff member image.",
+      "description": "ユーザー3の画像",
       "uploaded_at": "2024-06-09T15:50:00Z"
     },
     {
@@ -87,7 +79,7 @@
       "name": "unknown.png",
       "path": "/highschool/unknown.png",
       "type": "image/png",
-      "description": "Unknown user image.",
+      "description": "不明なユーザーの画像",
       "uploaded_at": "2024-06-09T16:00:00Z"
     }
   ]

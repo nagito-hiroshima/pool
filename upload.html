@@ -5,23 +5,34 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Uploader</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 2rem; }
-  .drop { border: 2px dashed #888; padding: 2rem; text-align: center; border-radius: 12px; }
-  .drop.drag { background: #f5f5f5; }
-  .row { display: grid; gap: .5rem; margin-top: 1rem; }
-  label { font-size: .9rem; color: #555; }
-  input[type="text"] { padding: .5rem .7rem; border: 1px solid #ccc; border-radius: 8px; width: 100%; }
-  button { padding: .6rem 1rem; border: 0; border-radius: 10px; cursor: pointer; }
-  .primary { background: #111; color: #fff; }
-  img { max-width: 320px; max-height: 240px; display: block; margin-top: 1rem; border-radius: 8px; }
-  .muted { color: #777; font-size: .9rem; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  @media (max-width: 640px){ .grid { grid-template-columns: 1fr; } }
-  .out { white-space: pre-wrap; background: #fafafa; border: 1px solid #eee; padding: .75rem; border-radius: 8px; }
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    /* 戻るボタン */
+    .back-btn {
+      text-decoration: none; display: inline-block; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid #ddd; background: #fff; color: #111; font-weight: 600;
+    }
+    .back-btn.primary { background:#111; color:#fff; border-color:#111; }
+    .drop { border: 2px dashed #888; padding: 2rem; text-align: center; border-radius: 12px; }
+    .drop.drag { background: #f5f5f5; }
+    .row { display: grid; gap: .5rem; margin-top: 1rem; }
+    label { font-size: .9rem; color: #555; }
+    input[type="text"] { padding: .5rem .7rem; border: 1px solid #ccc; border-radius: 8px; width: 100%; }
+    button { padding: .6rem 1rem; border: 0; border-radius: 10px; cursor: pointer; }
+    .primary { background: #111; color: #fff; }
+    img { max-width: 320px; max-height: 240px; display: block; margin-top: 1rem; border-radius: 8px; }
+    .muted { color: #777; font-size: .9rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px){ .grid { grid-template-columns: 1fr; } }
+    .out { white-space: pre-wrap; background: #fafafa; border: 1px solid #eee; padding: .75rem; border-radius: 8px; }
 </style>
 </head>
 <body>
-  <h1>画像アップロード（→ GitHub: nagito-hiroshima/pool）</h1>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <h1>画像アップロード（→ GitHub: nagito-hiroshima/pool）</h1>
+    <div>
+      <a href="./" class="back-btn" title="素材サイトに戻る">◀ 素材サイトに戻る</a>
+    </div>
+  </div>
   <p class="muted">※ 開発/個人用サンプル。運用時は Cloudflare Access 等で保護してください。</p>
 
   <div id="drop" class="drop">ここに画像をドラッグ＆ドロップ<br>またはクリックして選択</div>
