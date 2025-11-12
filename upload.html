@@ -44,10 +44,6 @@
 
   <div class="grid">
     <div class="row">
-      <label>API Endpoint</label>
-      <input id="endpoint" type="text" value="/api/upload" />
-    </div>
-    <div class="row">
       <label>X-Admin-Token（管理トークン）</label>
       <input id="admin" type="text" placeholder="********" />
     </div>
@@ -119,7 +115,7 @@ $("send").addEventListener("click", async () => {
   fd.append("overwrite", $("overwrite").checked ? "true" : "false");
 
   try {
-    const res = await fetch($("endpoint").value || "/api/upload", {
+    const res = await fetch($("/api/upload", {
       method: "POST",
       headers: {
         "X-Admin-Token": $("admin").value || ""
