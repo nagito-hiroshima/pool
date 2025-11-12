@@ -92,7 +92,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const body = safeJSON(await putRes.text());
     const msg = typeof body === "string" ? body : (body?.message || "");
     if (String(msg).includes("already exists")) {
-      targetName = `${uniquePrefix()}-${safeOrig}`;
+      targetName = `${uniquePrefix()}-${finalName}`;
       safePath = dir ? `${dir}/${targetName}` : targetName;
       putRes = await fetch(`${apiBase}/repos/${repo}/contents/${safePath}`, {
         method: "PUT",
