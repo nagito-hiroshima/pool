@@ -97,6 +97,14 @@
       "type": "image/png",
       "description": "不明なユーザーの画像",
       "uploaded_at": "2024-06-09T16:00:00Z"
-    }
+    },
+    {
+      "dir": "/",
+      "name":"faq_bridge_icon_512.png",
+      "path":"/faq_bridge_icon_512.png",
+      "type":"image/png",
+      "description":"不明なユーザーの画像",
+      "uploaded_at":"2026-07-24T06:48:29.643Z"
+        }
   ]
 }
